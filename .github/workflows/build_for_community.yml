@@ -25,7 +25,7 @@ jobs:
         with:
           channel: "stable"
       - name: Build APK
-        working-directory: app
+        working-directory: ./app
         run: |
           flutter pub get
           flutter build apk --release --split-per-abi
@@ -47,12 +47,12 @@ jobs:
         with:
           channel: "stable"
       - name: Build Windows
-        working-directory: app
+        working-directory: ./app
         run: |
           flutter pub get
           flutter build windows --release
       - name: Archive Windows release
-        working-directory: app
+        working-directory: ./app
         run: Compress-Archive -Path build/windows/runner/Release -DestinationPath ../windows_x64_${{ needs.get-version.outputs.version }}.zip
       - name: Upload Windows
         uses: actions/upload-artifact@v4
