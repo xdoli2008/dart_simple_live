@@ -1,0 +1,286 @@
+name: Build Windows and App
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'master'
+      - 'dev'
+    paths:
+      - 'simple_live_app/**'
+      - 'simple_live_core/**'
+      - '.github/workflows/build_windows_and_app.yml'
+
+jobs:
+  # 编译Windows版本
+  build-windows:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      # 签出代码
+      - uses: actions/checkout@v4
+      
+      # 设置Flutter环境
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.22.x"
+          cache: true
+      
+      # 启用Windows Desktop支持
+      - name: Enable Flutter Desktop
+        run: flutter config --enable-windows-desktop
+      
+      # 更新Flutter的packages
+      - name: Restore Packages
+        run: |
+          cd simple_live_app
+          flutter pub get
+      
+      # 设置flutter_distributor环境
+      - name: Install flutter_distributor
+        run: dart pub global activate flutter_distributor
+      
+      # 编译Windows ZIP和MSIX
+      - name: Build Windows
+        run: |
+          cd simple_live_app
+          flutter_distributor package --platform windows --targets msix,zip --skip-clean
+      
+      # 上传Windows包至Artifacts
+      - name: Upload Windows APP to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            simple_live_app/build/dist/*/*.msix
+            simple_live_app/build/dist/*/*.zip
+      
+      # 完成
+      - run: echo "🍏 Windows build job's status is ${{ job.status }}."
+
+  # 编译Android App版本
+  build-android:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # 签出代码
+      - uses: actions/checkout@v4
+      
+      # 设置JAVA环境
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: "17"
+          cache: "gradle"
+      
+      # 设置Flutter环境
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.22.x"
+          cache: true
+      
+      # 更新Flutter的packages
+      - name: Restore Packages
+        run: |
+          cd simple_live_app
+          flutter pub get
+      
+      # 编译APK (不签名，用于测试)
+      - name: Build APK
+        run: |
+          cd simple_live_app
+          flutter build apk --release --split-per-abi
+      
+      # 上传APK至Artifacts
+      - name: Upload APK to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build
+          path: |
+            simple_live_app/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            simple_live_app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            simple_live_app/build/app/outputs/flutter-apk/app-x86_64-release.apk
+      
+      # 完成
+      - run: echo "🍏 Android build job's status is ${{ job.status }}."
+
+  # 编译iOS App版本 (仅在macOS上)
+  build-ios:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      # 签出代码
+      - uses: actions/checkout@v4
+      
+      # 设置Flutter环境
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.22.x"
+          cache: true
+      
+      # 更新Flutter的packages
+      - name: Restore Packages
+        run: |
+          cd simple_live_app
+          flutter pub get
+      
+      # 编译iOS (不签名)
+      - name: Build iOS
+        run: |
+          cd simple_live_app
+          flutter build ios --release --no-codesign
+      
+      # 创建未签名IPA
+      - name: Create IPA
+        run: |
+          cd simple_live_app
+          mkdir build/ios/iphoneos/Payload
+          cp -R build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/Runner.app
+          cd build/ios/iphoneos/
+          zip -q -r ios_no_sign.ipa Payload
+          cd ../../..
+      
+      # 上传IPA至Artifacts
+      - name: Upload IPA to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: |
+            simple_live_app/build/ios/iphoneos/ios_no_sign.ipa
+      
+      # 完成
+      - run: echo "🍏 iOS build job's status is ${{ job.status }}."
+
+  # 编译macOS App版本
+  build-macos:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      # 签出代码
+      - uses: actions/checkout@v4
+      
+      # 设置Flutter环境
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.22.x"
+          cache: true
+      
+      # 启用macOS Desktop支持
+      - name: Enable Flutter Desktop
+        run: flutter config --enable-macos-desktop
+      
+      # 更新Flutter的packages
+      - name: Restore Packages
+        run: |
+          cd simple_live_app
+          flutter pub get
+      
+      # 安装appdmg
+      - name: Install appdmg
+        run: npm install -g appdmg
+      
+      # 设置flutter_distributor环境
+      - name: Install flutter_distributor
+        run: dart pub global activate flutter_distributor
+      
+      # 编译macOS
+      - name: Build MacOS
+        run: |
+          cd simple_live_app
+          flutter_distributor package --platform macos --targets dmg,zip --skip-clean
+      
+      # 上传macOS包至Artifacts
+      - name: Upload MacOS to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: |
+            simple_live_app/build/dist/*/*.dmg
+            simple_live_app/build/dist/*/*.zip
+      
+      # 完成
+      - run: echo "🍏 macOS build job's status is ${{ job.status }}."
+
+  # 编译Linux App版本
+  build-linux:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      # 签出代码
+      - uses: actions/checkout@v4
+      
+      # 设置Flutter环境
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.22.x"
+          cache: true
+      
+      # 安装依赖
+      - name: Update apt-get
+        run: sudo apt-get update
+      - name: Install Dependencies
+        run: sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libmpv-dev mpv
+      
+      # 启用Linux Desktop支持
+      - name: Enable Flutter Desktop
+        run: flutter config --enable-linux-desktop
+      
+      # 更新Flutter的packages
+      - name: Restore Packages
+        run: |
+          cd simple_live_app
+          flutter pub get
+      
+      # 设置flutter_distributor环境
+      - name: Install flutter_distributor
+        run: dart pub global activate flutter_distributor
+      
+      # 编译Linux
+      - name: Build Linux
+        run: |
+          cd simple_live_app
+          flutter_distributor package --platform linux --targets deb,zip --skip-clean
+      
+      # 上传Linux包至Artifacts
+      - name: Upload Linux APP to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: |
+            simple_live_app/build/dist/*/*.deb
+            simple_live_app/build/dist/*/*.zip
+      
+      # 完成
+      - run: echo "🍏 Linux build job's status is ${{ job.status }}."
+
+  # 总结报告
+  build-summary:
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-android, build-ios, build-macos, build-linux]
+    if: always()
+    steps:
+      - name: Build Summary
+        run: |
+          echo "## 🚀 编译完成报告" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📱 移动端应用" >> $GITHUB_STEP_SUMMARY
+          echo "- **Android**: ${{ needs.build-android.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **iOS**: ${{ needs.build-ios.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🖥️ 桌面端应用" >> $GITHUB_STEP_SUMMARY
+          echo "- **Windows**: ${{ needs.build-windows.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **macOS**: ${{ needs.build-macos.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Linux**: ${{ needs.build-linux.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 构建产物" >> $GITHUB_STEP_SUMMARY
+          echo "所有构建产物已上传至Artifacts，可在Actions页面下载。" >> $GITHUB_STEP_SUMMARY
