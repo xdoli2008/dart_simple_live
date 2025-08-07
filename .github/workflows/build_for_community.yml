@@ -1,0 +1,88 @@
+name: Publish Community App Build
+
+# 允许手动在Action页面触发
+on:
+  workflow_dispatch:
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Get version
+        id: get_version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+  build-apk:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+      - name: Build APK
+        working-directory: ./app
+        run: |
+          flutter pub get
+          flutter build apk --release --split-per-abi
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: apks
+          path: app/build/app/outputs/flutter-apk/app-*-release.apk
+
+  build-windows:
+    needs: get-version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          fetch-depth: 0
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+      - name: Build Windows
+        working-directory: ./app
+        run: |
+          flutter pub get
+          flutter build windows --release
+      - name: Archive Windows release
+        uses: Oleksandr-Moiseiev/zip-release@v1
+        with:
+          path: app/build/windows/runner/Release
+          filename: "windows_x64_${{ needs.get-version.outputs.version }}.zip"
+      - name: Upload Windows
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows
+          path: "windows_x64_${{ needs.get-version.outputs.version }}.zip"
+
+  publish-app-release:
+    needs: [get-version, build-apk, build-windows]
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download apks
+        uses: actions/download-artifact@v3
+        with:
+          name: apks
+      - name: Download windows
+        uses: actions/download-artifact@v3
+        with:
+          name: windows
+      - name: Publish to GH Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "community-${{ github.run_id }}"
+          name: "Community Build ${{ github.run_id }}"
+          body: "Community build triggered by workflow_dispatch. This is a pre-release for testing."
+          files: |
+            *.apk
+            *.zip
+          prerelease: true
