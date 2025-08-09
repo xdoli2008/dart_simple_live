@@ -1,0 +1,19 @@
+---
+globs: simple_live_core/lib/**/*.dart
+description: 在 simple_live_core 中扩展新站点/弹幕实现
+---
+
+### 关键接口与导出
+- 站点接口: [live_site.dart](mdc:simple_live_core/lib/src/interface/live_site.dart)
+- 弹幕接口: [live_danmaku.dart](mdc:simple_live_core/lib/src/interface/live_danmaku.dart)
+- 总导出: [simple_live_core.dart](mdc:simple_live_core/lib/simple_live_core.dart)
+
+### 参考实现
+- 站点： [bilibili_site.dart](mdc:simple_live_core/lib/src/bilibili_site.dart)、[huya_site.dart](mdc:simple_live_core/lib/src/huya_site.dart) 等
+- 弹幕： `src/danmaku/*.dart`
+
+### 扩展步骤
+1. 新增站点与弹幕实现，满足接口约定（房间详情、清晰度、播放地址、弹幕消息模型等）。
+2. 在 [simple_live_core.dart](mdc:simple_live_core/lib/simple_live_core.dart) 中导出新类型。
+3. App/TV 侧按需接入新站点（解析、展示、播放）。
+

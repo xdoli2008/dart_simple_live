@@ -1,0 +1,43 @@
+---
+alwaysApply: true
+description: 项目结构与关键入口导航
+---
+
+### 项目总览
+- **核心库**: [simple_live_core.dart](mdc:simple_live_core/lib/simple_live_core.dart)
+- **移动/桌面客户端(App)**: [main.dart](mdc:simple_live_app/lib/main.dart)
+- **TV 客户端**: [main.dart](mdc:simple_live_tv_app/lib/main.dart)
+- **控制台工具**: [simple_live_console.dart](mdc:simple_live_console/bin/simple_live_console.dart)
+- **公共资源**: `assets/`
+
+### App 路由与入口
+- 入口在 [simple_live_app/lib/main.dart](mdc:simple_live_app/lib/main.dart)
+  - `GetMaterialApp.initialRoute` 由 [route_path.dart](mdc:simple_live_app/lib/routes/route_path.dart) 定义
+  - 路由表在 [app_pages.dart](mdc:simple_live_app/lib/routes/app_pages.dart)
+
+### App 网络与错误
+- HTTP 封装: [http_client.dart](mdc:simple_live_app/lib/requests/http_client.dart)
+- 日志拦截器: [custom_log_interceptor.dart](mdc:simple_live_app/lib/requests/custom_log_interceptor.dart)
+- 错误类型: [http_error.dart](mdc:simple_live_app/lib/requests/http_error.dart)
+
+### App 日志与工具
+- 日志工具: [log.dart](mdc:simple_live_app/lib/app/log.dart)
+- 常用工具: [utils.dart](mdc:simple_live_app/lib/app/utils.dart)
+
+### TV App
+- 入口在 [simple_live_tv_app/lib/main.dart](mdc:simple_live_tv_app/lib/main.dart)
+- 路由表与路径文件位于 `simple_live_tv_app/lib/routes/`
+
+### 核心库 simple_live_core
+- 总出口: [simple_live_core.dart](mdc:simple_live_core/lib/simple_live_core.dart)
+- 关键接口：
+  - 站点接口: [live_site.dart](mdc:simple_live_core/lib/src/interface/live_site.dart)
+  - 弹幕接口: [live_danmaku.dart](mdc:simple_live_core/lib/src/interface/live_danmaku.dart)
+- 已实现站点：`bilibili/huya/douyu/douyin`（参考 `src/*.dart` 与 `src/danmaku/*.dart`）
+
+### 控制台程序 simple_live_console
+- 命令解析与入口: [simple_live_console.dart](mdc:simple_live_console/bin/simple_live_console.dart)
+
+### 环境与版本
+- Flutter 版本参考项目说明: [README.md](mdc:README.md)
+

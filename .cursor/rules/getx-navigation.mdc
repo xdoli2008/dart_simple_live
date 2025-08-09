@@ -1,0 +1,21 @@
+---
+globs: simple_live_app/lib/**/*.dart
+description: GetX 路由与依赖注入约定（App）
+---
+
+### 关键文件
+- 路由常量: [route_path.dart](mdc:simple_live_app/lib/routes/route_path.dart)
+- 路由表: [app_pages.dart](mdc:simple_live_app/lib/routes/app_pages.dart)
+- 入口注册: [main.dart](mdc:simple_live_app/lib/main.dart)
+
+### 增加页面步骤
+1. 在 `RoutePath` 中新增常量（参考 [route_path.dart](mdc:simple_live_app/lib/routes/route_path.dart)）。
+2. 在 `AppPages.routes` 中新增 `GetPage`，必要时使用 `BindingsBuilder.put` 注入 `Controller`（参考 [app_pages.dart](mdc:simple_live_app/lib/routes/app_pages.dart)）。
+3. 页面组件置于对应模块目录（如 `modules/xxx`），遵循现有分层（`controller/page`）。
+
+### 导航示例
+```dart
+Get.toNamed(RoutePath.kSearch);
+Get.toNamed(RoutePath.kLiveRoomDetail, parameters: {"roomId": id});
+```
+

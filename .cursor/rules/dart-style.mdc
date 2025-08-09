@@ -1,0 +1,22 @@
+---
+globs: *.dart
+description: Dart/Flutter 代码风格与实践建议（与 analysis_options 保持一致）
+---
+
+### 命名与结构
+- 函数/方法名使用动词短语；变量名使用名词短语，避免缩写。
+- 优先早返回，控制层级不超过 2–3 层。
+- 异步优先使用 async/await，捕获并包装业务语义错误。
+
+### 日志与错误
+- 使用 App 的日志工具（见 [simple_live_app/lib/app/log.dart](mdc:simple_live_app/lib/app/log.dart) 的 `Log.d/i/w/e`）。
+- 网络错误统一抛出/转换为 [http_error.dart](mdc:simple_live_app/lib/requests/http_error.dart)。
+
+### UI 与本地化
+- 统一通过 Get 获取上下文/主题/导航。
+参考固定中文环境配置见 [simple_live_app/lib/main.dart](mdc:simple_live_app/lib/main.dart) 中 `locale` 与 `supportedLocales`。
+
+### Lints
+- App/TV 使用 `flutter_lints`（见各自 `analysis_options.yaml`）。
+- Core 使用 `package:lints/recommended.yaml`（见 [simple_live_core/analysis_options.yaml](mdc:simple_live_core/analysis_options.yaml)）。
+

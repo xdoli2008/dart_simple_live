@@ -1,0 +1,19 @@
+---
+globs: **/test/**/*.dart
+description: 测试与本地运行指引
+---
+
+### 测试位置
+- App: `simple_live_app/test/`
+- Core: `simple_live_core/test/`
+- TV: `simple_live_tv_app/test/`
+- Console: `simple_live_console/test/`（如有）
+
+### 常用命令
+- 运行 Core 示例/测试（Dart 包）：使用 `dart run` / `dart test`
+- 运行 App/TV（Flutter 工程）：使用 `flutter run` / `flutter test`
+
+### 提示
+控制台示例入口： [simple_live_console.dart](mdc:simple_live_console/bin/simple_live_console.dart)
+需要联网功能时，请在真机或具备网络能力的模拟器中运行。
+

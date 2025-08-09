@@ -1,0 +1,21 @@
+---
+globs: simple_live_app/lib/requests/**/*.dart,simple_live_app/lib/**/*.dart
+description: 网络请求与错误处理约定（Dio 封装）
+---
+
+### 关键文件
+- 客户端: [http_client.dart](mdc:simple_live_app/lib/requests/http_client.dart)
+- 日志拦截: [custom_log_interceptor.dart](mdc:simple_live_app/lib/requests/custom_log_interceptor.dart)
+- 错误类型: [http_error.dart](mdc:simple_live_app/lib/requests/http_error.dart)
+
+### 使用方式
+```dart
+final text = await HttpClient.instance.getText(url, queryParameters: {...});
+final json = await HttpClient.instance.getJson(url, header: {...});
+```
+
+### 约定
+- 超时、响应格式、请求头均通过 `HttpClient` 统一配置，业务侧不直接创建 `Dio`。
+- 捕获 `DioException` 并转换为 `HttpError` 抛出；UI 层做用户可感知提示。
+- 需要取消请求时传入 `CancelToken`；大体量请求务必设置超时与取消。
+

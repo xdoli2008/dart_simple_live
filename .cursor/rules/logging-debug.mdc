@@ -1,0 +1,13 @@
+---
+globs: simple_live_app/lib/app/**/*.dart,simple_live_tv_app/lib/app/**/*.dart
+description: 日志记录与调试视图（App/TV）
+---
+
+### 日志写入
+- 统一使用 [log.dart](mdc:simple_live_app/lib/app/log.dart) 的 `Log.d/i/w/e`。
+- 桌面端 App 会将日志写入应用支持目录下的 `log/*.log`，详见 `LogFileWriter`。
+
+### 调试面板
+- 非 Release 模式，App 右下角提供 `DEBUG LOG` 按钮（见 [main.dart](mdc:simple_live_app/lib/main.dart) 中的 `Visibility` 逻辑）。
+- Core 层日志通过 `CoreLog.onPrintLog` 转发到 App 日志（见 `initCoreLog`）。
+
